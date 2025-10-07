@@ -13,6 +13,7 @@
     "axios": "^1.12.2",
     "chromedriver": "^140.0.4",
     "csv-writer": "^1.6.0",
+    "express": "^5.1.0",
     "luxon": "^3.7.2",
     "puppeteer": "^24.22.3"
   }
