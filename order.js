@@ -11,18 +11,23 @@ let isProcessing = false;
 // --- لاگین ---
 async function login() {
     console.log("🔑 در حال لاگین...");
-    await page.goto("https://darina.zaryar.com/#auth/login", { waitUntil: "networkidle2" });
+    await page.goto("https://darina.zaryar.com/#auth/login", {
+        waitUntil: "networkidle2",
+    });
 
-    await page.click(".loginType-container .btn");
-    await clickIfExists("#close_button", 5000);
+    await clickIfExists(".loginType-container .btn", 3000);
+    await clickIfExists("#close_button", 3000);
 
     await page.type('input[name="UserName"]', "09396360199");
     await page.type('input[name="Password"]', "Zhik1234!");
     await page.click('button[type="submit"]');
 
-    await clickIfExists(".modal-dialog button", 3000);
-    await page.waitForSelector("#ItemPricesList", { visible: true, timeout: 20000 });
-    console.log("✅ ورود موفق شد");
+    await clickIfExists(".modal-dialog button", 15000);
+    await page.waitForSelector("#ItemPricesList", {
+        visible: true,
+        timeout: 20000,
+    });
+    console.log("✅ ورود موفق");
 }
 
 async function clickIfExists(selector, timeout = 3000) {
@@ -49,11 +54,9 @@ async function processOrder(order) {
     const { action, delivery, amount } = order;
     await ensureLoggedIn();
 
-    const rowText = delivery === "tomorrow" ? "آبشده نقد فردا" : "آبشده نقد پس فردا";
-    const clicked = await clickOnPrice(rowText, action);
-
+    const clicked = await clickOnPrice(delivery, action);
     if (!clicked) {
-        console.log(`❌ نتوانستم مظنه "${rowText}" برای ${action} پیدا کنم`);
+        console.log(`❌ نتوانستم مظنه "${delivery}" برای ${action} پیدا کنم`);
         return;
     }
 
@@ -70,10 +73,9 @@ async function processOrder(order) {
     await page.waitForSelector(confirmBtn, { visible: true });
     await page.click(confirmBtn);
 
-    // بستن Modal سریع قبل از رفتن سراغ سفارش بعدی
     await clickIfExists('div[role="dialog"] .btn.btn-secondary', 2000);
 
-    console.log(`✅ سفارش ${action} ${rowText} (${amount} گرم) ثبت شد`);
+    console.log(`✅ سفارش ${action} ${delivery} (${amount} عدد) ثبت شد`);
 }
 
 async function clickOnPrice(rowText, type) {
@@ -81,7 +83,7 @@ async function clickOnPrice(rowText, type) {
         const rows = document.querySelectorAll("#ItemPricesList .row.g-0.border-bottom");
         for (const row of rows) {
             const nameEl = row.querySelector(".col-4.text-start span");
-            if (nameEl && nameEl.textContent.includes(rowText)) {
+            if (nameEl && nameEl.textContent.trim() === rowText.trim()) {
                 let targetEl;
                 if (type === "buy") {
                     targetEl = row.querySelector(".highlight-buy-price span.text-success span");
